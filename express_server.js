@@ -13,7 +13,7 @@ const urlDatabase = {
 };
 
 const generateRandomString = function() {
-  const charString = "0123456789abcdefghijklmnopqrskutwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  const charString = "0123456789abcdefghijklmnopqrskutwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
   const stringLength = 5;
   let randString = "";
   for (let i = 0; i < stringLength; i++) {
@@ -42,21 +42,25 @@ app.get("/urls/new", (req, res) => {
 
 app.post("/urls", (req, res) => {
   console.log(req.body);
+  console.log(urlDatabase);
   let shortURL = generateRandomString();
   urlDatabase[shortURL] = req.body.longURL;
+  console.log(urlDatabase);
+  console.log(req.body);
   res.redirect(`/urls/${shortURL}`);
+  
 });
 
 app.get("/urls/:shortURL", (req, res) => {
-  let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], };
+  let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
   res.render("urls_show", templateVars);
-  console.log(templateVars);
 });
 
 app.get("/u/:shortURL", (req,res) => {
   const longURL = urlDatabase[req.params.shortURL];
-  res.redirect(longURL);
-  console.log(longURL);
+  console.log("req.params:", req.params);
+  console.log("longURL", longURL);
+  res.redirect(`http://${longURL}`); //// CHECK IF USER HAS ADDED HTTP
 });
 
 app.get("/hello", (req, res) => {
