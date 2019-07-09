@@ -35,14 +35,8 @@ app.get("/urls.json", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
-  console.log(req.cookies);
   let templateVars = { urls: urlDatabase, username: req.cookies.username };
   res.render("urls_index", templateVars);
-});
-
-app.get("/urls/new", (req, res) => {
-  let templateVars = { urls: urlDatabase, username: req.cookies.username };
-  res.render("urls_new", templateVars);
 });
 
 app.post("/urls", (req, res) => {
@@ -52,30 +46,25 @@ app.post("/urls", (req, res) => {
   
 });
 
+app.get("/urls/new", (req, res) => {
+  let templateVars = { urls: urlDatabase, username: req.cookies.username };
+  res.render("urls_new", templateVars); //passes data to the urls_new view template
+});
+
 app.post("/login", (req, res) => {
-  console.log(req.body);
   res.cookie('username', req.body.username);
-  res.redirect('/urls');
-  let templateVars = {
-    username: req.body.username
-  };
-  console.log(templateVars);
-  res.render("urls_index", templateVars);
+  res.redirect('/urls'); // don't need to render because get route for /urls will render the required data.
+  
 });
 
 app.post("/logout", (req, res) => {
   console.log(req.body);
   res.cookie('username', "");
-  res.redirect('/urls');
-  let templateVars = {
-    username: req.body.username
-  };
-  console.log(templateVars);
-  res.render("urls_index", templateVars);
+  res.redirect('/urls'); // don't need to render because get route for /urls will render the required data.
 });
 
 app.get("/urls/:shortURL", (req, res) => {
-  let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
+  let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], username: req.cookies.username };
   res.render("urls_show", templateVars);
 });
 
