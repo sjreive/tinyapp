@@ -47,6 +47,13 @@ app.post("/urls", (req, res) => {
   
 });
 
+app.post("/login", (req, res) => {
+  console.log(req.body);
+  res.cookie('username', req.body.username);
+  res.redirect('/urls');
+  
+});
+
 app.get("/urls/:shortURL", (req, res) => {
   let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
   res.render("urls_show", templateVars);
