@@ -59,6 +59,12 @@ app.get("/u/:shortURL", (req,res) => {
   res.redirect(`${longURL}`); //// CHECK IF USER HAS ADDED HTTP
 });
 
+app.post("/urls/:id", (req, res) => {
+  urlDatabase[req.params.id] = req.body.longURL;
+  console.log(urlDatabase);
+  res.redirect(`/urls/${req.params.id}`);
+});
+
 app.post("/urls/:shortURL/delete", (req, res) => { //using javascript's delete operator to remove url
   delete urlDatabase[req.params.shortURL];
   res.redirect("/urls/");
