@@ -41,12 +41,8 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.post("/urls", (req, res) => {
-  console.log(req.body);
-  console.log(urlDatabase);
   let shortURL = generateRandomString();
   urlDatabase[shortURL] = req.body.longURL;
-  console.log(urlDatabase);
-  console.log(req.body);
   res.redirect(`/urls/${shortURL}`);
   
 });
@@ -60,7 +56,13 @@ app.get("/u/:shortURL", (req,res) => {
   const longURL = urlDatabase[req.params.shortURL];
   console.log("req.params:", req.params);
   console.log("longURL", longURL);
-  res.redirect(`http://${longURL}`); //// CHECK IF USER HAS ADDED HTTP
+  res.redirect(`${longURL}`); //// CHECK IF USER HAS ADDED HTTP
+});
+
+app.post("/urls/:shortURL/delete", (req, res) => { //using javascript's delete operator to remove url
+  delete urlDatabase[req.params.shortURL];
+  res.redirect("/urls/");
+  
 });
 
 app.get("/hello", (req, res) => {
