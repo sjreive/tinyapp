@@ -15,8 +15,18 @@ const urlDatabase = {
   "9sm5xK" : "http://www.google.com"
 };
 
+const users = {};
+
+class User {
+  constructor(email, password) {
+    this.id = generateRandomString();
+    this.email = email;
+    this.password = password;
+  }
+}
+
 const generateRandomString = function() {
-  const charString = "0123456789abcdefghijklmnopqrskutwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+  const charString = "0123456789abcdefghijklmnopqrskutwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
   const stringLength = 5;
   let randString = "";
   for (let i = 0; i < stringLength; i++) {
@@ -51,7 +61,11 @@ app.get("/register", (req, res) => {
 });
 
 app.post("/register", (req, res) => {
-  res.redirect('/register');
+  let newUser = new User(req.body.email, req.body.password);
+  console.log(newUser);
+  users[newUser.id] = newUser;
+  res.cookie('username', newUser.id);
+  res.redirect('/urls');
 });
 
 app.get("/urls/new", (req, res) => {
