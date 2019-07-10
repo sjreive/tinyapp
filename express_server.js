@@ -116,8 +116,12 @@ app.get("/login", (req, res) => {
 
 
 app.get("/urls/new", (req, res) => {
-  let templateVars = { urls: urlDatabase, user : users[req.cookies.user_id] };
-  res.render("urls_new", templateVars); //passes data to the urls_new view template
+  if (req.cookies.user_id) { // if user is logged in, render page to allow them to create tiny URL
+    let templateVars = { urls: urlDatabase, user : users[req.cookies.user_id] };
+    res.render("urls_new", templateVars); //passes data to the urls_new view template
+  } else { // if user is not logged in, redirect them to the login page
+    res.redirect("/login");
+  }
 });
 
 app.post("/login", (req, res) => {
