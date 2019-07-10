@@ -160,7 +160,7 @@ app.get("/urls/:shortURL", (req, res) => {
 });
 
 app.get("/u/:shortURL", (req,res) => {
-  const longURL = urlDatabase[req.params.shortURL];
+  const longURL = urlDatabase[req.params.shortURL].longURL;
   console.log("req.params:", req.params);
   console.log("longURL", longURL);
   res.redirect(`${longURL}`); //// CHECK IF USER HAS ADDED HTTP
@@ -173,9 +173,13 @@ app.post("/urls/:shortURL", (req, res) => {
 });
 
 app.post("/urls/:shortURL/delete", (req, res) => { //using javascript's delete operator to remove url
-  delete urlDatabase[req.params.shortURL];
-  res.redirect("/urls/");
-  
+  if (filterURLs(urlDatabase, req)[req.params.shortURL]) { //if user is logged in and has authority to delete this shortURL (ie it is in their database), delete;
+    console.log("DELETING!!");
+    delete urlDatabase[req.params.shortURL];
+  } else { // if user has a
+    res.send('CANNOT DELETE THIS RESOURCE!');
+  }
+  res.redirect("/urls/"); // redirect back to urls regardless.
 });
 
 app.get("/hello", (req, res) => {
