@@ -15,7 +15,13 @@ const urlDatabase = {
   "9sm5xK" : "http://www.google.com"
 };
 
-const users = {};
+const users = {
+  Uk78A: {
+    id: 'Uk78A',
+    email: 'sarahjreive@gmail.com',
+    password: 'password123',
+  }
+};
 
 class User {
   constructor(email, password) {
@@ -36,6 +42,20 @@ const generateRandomString = function() {
   return randString;
 };
 
+// This function used to check if registering email already exists in the database. Also checks if password and emails fields are blank.
+const emailLookupHelper = function (users, newUser) { 
+  if (newUser.email === "" || newUser.password === "") {
+    return false;
+  }
+  for (let user in users) {
+    if (users[user].email === newUser.email) {
+      return false;
+    }
+  }
+  return true;
+};
+
+
 app.get("/", (req, res) => {
   res.send("Hello!");
 });
@@ -52,7 +72,7 @@ app.get("/urls", (req, res) => {
 app.post("/urls", (req, res) => {
   let shortURL = generateRandomString();
   urlDatabase[shortURL] = req.body.longURL;
-  res.redirect(`/urls/${shortURL}`); 
+  res.redirect(`/urls/${shortURL}`);
 });
 
 app.get("/register", (req, res) => {
@@ -62,10 +82,16 @@ app.get("/register", (req, res) => {
 
 app.post("/register", (req, res) => {
   let newUser = new User(req.body.email, req.body.password);
-  console.log(newUser);
-  users[newUser.id] = newUser;
-  res.cookie('username', newUser.id);
-  res.redirect('/urls');
+  if (emailLookupHelper(users, newUser)) {
+    users[newUser.id] = newUser;
+    res.cookie('username', newUser.id);
+    res.redirect('/urls');
+  } else {
+    res.statusCode = 400;
+    res.end(`Error ${res.statusCode}, Bad Request- server cannnot process registeration info!`);
+  }
+
+  console.log(users);
 });
 
 app.get("/urls/new", (req, res) => {
