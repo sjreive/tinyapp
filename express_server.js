@@ -1,4 +1,3 @@
-
 const express = require("express");
 const app = express();
 const PORT = 8080; //default port 8080
@@ -94,7 +93,7 @@ app.post("/urls", (req, res) => {
 });
 
 app.get("/register", (req, res) => {
-  let templateVars = { urls: urlDatabase, user: "" };
+  let templateVars = { urls: urlDatabase, user : users[req.cookies.user_id] };
   res.render("urls_register", templateVars);
 });
 
@@ -102,7 +101,7 @@ app.post("/register", (req, res) => {
   let newUser = new User(req.body.email, req.body.password);
   if (!(emailLookupHelper(users, newUser)) && validateReg(newUser)) {
     users[newUser.id] = newUser;
-    res.cookie('user_id', newUser);
+    res.cookie('user_id', newUser.id);
     res.redirect('/urls');
   } else {
     res.statusCode = 400;
@@ -135,7 +134,6 @@ app.post("/logout", (req, res) => {
   res.clearCookie('user_id');
   res.redirect('/urls');
 });
-
 app.get("/urls/:shortURL", (req, res) => {
   let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], user : users[req.cookies.user_id] };
   res.render("urls_show", templateVars);
