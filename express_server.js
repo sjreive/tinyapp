@@ -42,11 +42,8 @@ const generateRandomString = function() {
   return randString;
 };
 
-// This function used to check if registering email already exists in the database. Also checks if password and emails fields are blank.
-const emailLookupHelper = function (users, newUser) { 
-  if (newUser.email === "" || newUser.password === "") {
-    return false;
-  }
+// This function used to check if registering email already exists in the database.
+const emailLookupHelper = function(users, newUser) {
   for (let user in users) {
     if (users[user].email === newUser.email) {
       return false;
@@ -54,6 +51,16 @@ const emailLookupHelper = function (users, newUser) {
   }
   return true;
 };
+
+// This function is used to check if email & password fields are empty.
+const validateReg = function(newUser) {
+  if (newUser.email === "" || newUser.password === "") {
+    return false;
+  } else {
+    return true;
+  }
+};
+//separate function into
 
 
 app.get("/", (req, res) => {
@@ -65,8 +72,9 @@ app.get("/urls.json", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
-  let templateVars = { urls: urlDatabase, username: req.cookies.username };
+  let templateVars = { urls: urlDatabase, user : users[req.cookies.user_id.id] };
   res.render("urls_index", templateVars);
+  console.log(templateVars.user);
 });
 
 app.post("/urls", (req, res) => {
@@ -76,43 +84,41 @@ app.post("/urls", (req, res) => {
 });
 
 app.get("/register", (req, res) => {
-  let templateVars = { urls: urlDatabase, username: req.cookies.username };
+  let templateVars = { urls: urlDatabase, user: "" };
   res.render("urls_register", templateVars);
 });
 
 app.post("/register", (req, res) => {
   let newUser = new User(req.body.email, req.body.password);
-  if (emailLookupHelper(users, newUser)) {
+  if (emailLookupHelper(users, newUser) && validateReg(newUser)) {
     users[newUser.id] = newUser;
-    res.cookie('username', newUser.id);
+    res.cookie('user_id', newUser);
     res.redirect('/urls');
   } else {
     res.statusCode = 400;
-    res.end(`Error ${res.statusCode}, Bad Request- server cannnot process registeration info!`);
+    res.end(`Error ${res.statusCode}, Bad Request- server cannnot process registeration info!`); ///
   }
-
-  console.log(users);
 });
 
 app.get("/urls/new", (req, res) => {
-  let templateVars = { urls: urlDatabase, username: req.cookies.username };
+  let templateVars = { urls: urlDatabase, user : users[req.cookies.user_id.id] };
   res.render("urls_new", templateVars); //passes data to the urls_new view template
 });
 
 app.post("/login", (req, res) => {
-  res.cookie('username', req.body.username);
+  //res.cookie('username', req.body.username);   NEEDS TO BE MODIFIED
   res.redirect('/urls'); // don't need to render because get route for /urls will render the required data.
   
 });
 
 app.post("/logout", (req, res) => {
   console.log(req.body);
-  res.cookie('username', "");
+  res.cookie('user_id', "");
   res.redirect('/urls'); // don't need to render because get route for /urls will render the required data.
 });
 
 app.get("/urls/:shortURL", (req, res) => {
-  let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], username: req.cookies.username };
+  let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], user : users[req.cookies.user_id.id] };
   res.render("urls_show", templateVars);
 });
 
