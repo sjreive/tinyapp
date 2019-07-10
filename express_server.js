@@ -45,11 +45,22 @@ const generateRandomString = function() {
 // This function used to check if registering email already exists in the database.
 const emailLookupHelper = function(users, newUser) {
   for (let user in users) {
+    console.log('User:', users[user].email, 'login email:', newUser.email);
     if (users[user].email === newUser.email) {
-      return false;
+      return user;
     }
   }
-  return true;
+  return false;
+};
+
+const loginHelper = function(users, loginData) {
+  for (let user in users) {
+    console.log('User:', users[user].password, 'login password:', loginData.password);
+    if (users[user].email === loginData.email && users[user].password === loginData.password) {
+      return true;
+    }
+  }
+  return false;
 };
 
 // This function is used to check if email & password fields are empty.
@@ -70,9 +81,10 @@ app.get("/urls.json", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
-  let templateVars = { urls: urlDatabase, user : users[req.cookies.user_id.id] };
+  let templateVars = { urls: urlDatabase, user : users[req.cookies.user_id] };
   res.render("urls_index", templateVars);
-  console.log(templateVars.user);
+  console.log(templateVars);
+  console.log(users[req.cookies.user_id]);
 });
 
 app.post("/urls", (req, res) => {
@@ -88,7 +100,7 @@ app.get("/register", (req, res) => {
 
 app.post("/register", (req, res) => {
   let newUser = new User(req.body.email, req.body.password);
-  if (emailLookupHelper(users, newUser) && validateReg(newUser)) {
+  if (!(emailLookupHelper(users, newUser)) && validateReg(newUser)) {
     users[newUser.id] = newUser;
     res.cookie('user_id', newUser);
     res.redirect('/urls');
@@ -99,30 +111,33 @@ app.post("/register", (req, res) => {
 });
 
 app.get("/login", (req, res) => {
-  let templateVars = { urls: urlDatabase, user : users[req.cookies.user_id.id] };
+  let templateVars = { urls: urlDatabase, user : users[req.cookies.user_id] };
   res.render("urls_login", templateVars);
-})
+});
 
 
 app.get("/urls/new", (req, res) => {
-  let templateVars = { urls: urlDatabase, user : users[req.cookies.user_id.id] };
+  let templateVars = { urls: urlDatabase, user : users[req.cookies.user_id] };
   res.render("urls_new", templateVars); //passes data to the urls_new view template
 });
 
 app.post("/login", (req, res) => {
-  //res.cookie('username', req.body.username);   NEEDS TO BE MODIFIED
-  res.redirect('/urls'); // don't need to render because get route for /urls will render the required data.
-  
+  if (loginHelper(users,req.body)) {
+    res.cookie('user_id', emailLookupHelper(users,req.body));
+    res.redirect('/urls');
+  } else {
+    res.statusCode = 403;
+    res.end(`Error ${res.statusCode}, Forbidden! You are not allowed to access this page.`);
+  }
 });
 
 app.post("/logout", (req, res) => {
-  console.log(req.body);
-  res.cookie('user_id', "");
-  res.redirect('/urls'); // don't need to render because get route for /urls will render the required data.
+  res.clearCookie('user_id');
+  res.redirect('/urls');
 });
 
 app.get("/urls/:shortURL", (req, res) => {
-  let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], user : users[req.cookies.user_id.id] };
+  let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], user : users[req.cookies.user_id] };
   res.render("urls_show", templateVars);
 });
 
