@@ -100,6 +100,12 @@ app.post("/register", (req, res) => {
   }
 });
 
+app.get("/login", (req, res) => {
+  let templateVars = { urls: urlDatabase, user : users[req.cookies.user_id.id] };
+  res.render("urls_login", templateVars);
+})
+
+
 app.get("/urls/new", (req, res) => {
   let templateVars = { urls: urlDatabase, user : users[req.cookies.user_id.id] };
   res.render("urls_new", templateVars); //passes data to the urls_new view template
