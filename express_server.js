@@ -15,13 +15,14 @@ const urlDatabase = {
   "9sm5xK" : { longURL: "http://www.google.com", userID: "Uk78A" }
 };
 
-const users = {
-  Uk78A: {
-    id: 'Uk78A',
-    email: 'sarahjreive@gmail.com',
-    password: 'password123',
+class urlDatabaseEntry {
+  constructor(longURL, userID) {
+    this.longURL = longURL;
+    this.userID = userID;
   }
-};
+}
+
+const users = {};
 
 class User {
   constructor(email, password) {
@@ -99,9 +100,9 @@ app.get("/urls", (req, res) => {
 });
 
 app.post("/urls", (req, res) => {
+  console.log(urlDatabase);
   let shortURL = generateRandomString();
-  urlDatabase[shortURL].longURL = req.body.longURL;
-  urlDatabase[shortURL].userID = req.cookies.user_id;
+  urlDatabase[shortURL] = new urlDatabaseEntry(req.body.longURL, req.cookies.user_id);
   res.redirect(`/urls/${shortURL}`);
 });
 
@@ -113,11 +114,13 @@ app.get("/register", (req, res) => {
 app.post("/register", (req, res) => {
   const hashedPassword = bcrypt.hashSync(req.body.password, 10); //hash password using bcrypt
   console.log(hashedPassword);
+  req.body.password = hashedPassword;
   let newUser = new User(req.body.email, hashedPassword); //pass user input email & hashed password to newUser constructor function
   if (!(emailLookupHelper(users, newUser)) && validateReg(newUser)) {
     users[newUser.id] = newUser;
     res.cookie('user_id', newUser.id);
     res.redirect('/urls');
+    console.log(newUser);
   } else {
     res.statusCode = 400;
     res.end(`Error ${res.statusCode}, Bad Request- server cannnot process registeration info!`); ///
@@ -170,7 +173,7 @@ app.get("/u/:shortURL", (req,res) => {
 });
 
 app.post("/urls/:shortURL", (req, res) => {
-  urlDatabase[req.params.shortURL] = req.body.longURL;
+  urlDatabase[req.params.shortURL].longURL = req.body.longURL;
   console.log(urlDatabase);
   res.redirect(`/urls/${req.params.shortURL}`);
 });
