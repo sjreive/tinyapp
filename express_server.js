@@ -2,11 +2,16 @@ const express = require("express");
 const app = express();
 const PORT = 8080; //default port 8080
 const bodyParser = require("body-parser");
-const cookieParser = require('cookie-parser');
+const cookieSession = require('cookie-session');
 const bcrypt = require('bcrypt');
 
 app.use(bodyParser.urlencoded({extended: true}));
-app.use(cookieParser());
+app.use(cookieSession({
+  name: 'session',
+  keys: ['blah'],
+  // Cookie Options
+  maxAge: 24 * 60 * 60 * 1000 // 24 hours
+}));
 
 app.set("view engine", "ejs");
 
@@ -78,7 +83,7 @@ const validateReg = function(newUser) {
 const filterURLs = function(urlDatabase, req) {
   let userUrlDatabase = {};
   for (let shortURL in urlDatabase) {
-    if (urlDatabase[shortURL].userID === req.cookies.user_id) {
+    if (urlDatabase[shortURL].userID === req.session.user_id) {
       userUrlDatabase[shortURL] = urlDatabase[shortURL];
     }
   }
@@ -94,20 +99,23 @@ app.get("/urls.json", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
+  console.log("session user id for get /urls:",req.session);
   let userUrlDatabase = filterURLs(urlDatabase, req);
-  let templateVars = { urls: userUrlDatabase, user : users[req.cookies.user_id] };
+  console.log(users);
+  let templateVars = { urls: userUrlDatabase, user : users[req.session.user_id] };
+  
   res.render("urls_index", templateVars);
 });
 
 app.post("/urls", (req, res) => {
-  console.log(urlDatabase);
+  console.log(req.session);
   let shortURL = generateRandomString();
-  urlDatabase[shortURL] = new urlDatabaseEntry(req.body.longURL, req.cookies.user_id);
+  urlDatabase[shortURL] = new urlDatabaseEntry(req.body.longURL, req.session.user_id);
   res.redirect(`/urls/${shortURL}`);
 });
 
 app.get("/register", (req, res) => {
-  let templateVars = { urls: urlDatabase, user : users[req.cookies.user_id] };
+  let templateVars = { urls: urlDatabase, user : users[req.session.user_id] };
   res.render("urls_register", templateVars);
 });
 
@@ -118,24 +126,25 @@ app.post("/register", (req, res) => {
   let newUser = new User(req.body.email, hashedPassword); //pass user input email & hashed password to newUser constructor function
   if (!(emailLookupHelper(users, newUser)) && validateReg(newUser)) {
     users[newUser.id] = newUser;
-    res.cookie('user_id', newUser.id);
+    req.session.user_id = newUser.id;
+    req.session.save();
     res.redirect('/urls');
-    console.log(newUser);
   } else {
     res.statusCode = 400;
     res.end(`Error ${res.statusCode}, Bad Request- server cannnot process registeration info!`); ///
   }
+  console.log('after registration session info:', req.session);
 });
 
 app.get("/login", (req, res) => {
-  let templateVars = { urls: urlDatabase, user : users[req.cookies.user_id] };
+  let templateVars = { urls: urlDatabase, user : users[req.session.user_id] };
   res.render("urls_login", templateVars);
 });
 
 
 app.get("/urls/new", (req, res) => {
-  if (req.cookies.user_id) { // if user is logged in, render page to allow them to create tiny URL
-    let templateVars = { urls: urlDatabase, user : users[req.cookies.user_id] };
+  if (req.session.user_id) { // if user is logged in, render page to allow them to create tiny URL
+    let templateVars = { urls: urlDatabase, user : users[req.session.user_id] };
     res.render("urls_new", templateVars); //passes data to the urls_new view template
   } else { // if user is not logged in, redirect them to the login page
     res.redirect("/login");
@@ -144,7 +153,8 @@ app.get("/urls/new", (req, res) => {
 
 app.post("/login", (req, res) => {
   if (loginHelper(users,req.body)) {
-    res.cookie('user_id', emailLookupHelper(users,req.body));
+    req.session.user_id = emailLookupHelper(users,req.body);
+    req.session.save();
     res.redirect('/urls');
   } else {
     res.statusCode = 403;
@@ -153,12 +163,12 @@ app.post("/login", (req, res) => {
 });
 
 app.post("/logout", (req, res) => {
-  res.clearCookie('user_id');
+  req.session = null;
   res.redirect('/urls');
 });
 app.get("/urls/:shortURL", (req, res) => {
   if (filterURLs(urlDatabase, req)[req.params.shortURL]) {
-    let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL].longURL, user : users[req.cookies.user_id] };
+    let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL].longURL, user : users[req.session.user_id] };
     res.render("urls_show", templateVars);
   } else {
     res.send("ERROR! You're not allowed to see this Tiny URL.");
