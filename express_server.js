@@ -10,8 +10,8 @@ app.use(cookieParser());
 app.set("view engine", "ejs");
 
 const urlDatabase = {
-  "b2xVn2" : "http://www.lighthouselabs.ca",
-  "9sm5xK" : "http://www.google.com"
+  "b2xVn2" : { longURL: "http://www.lighthouselabs.ca", userID: "Uk78A" },
+  "9sm5xK" : { longURL: "http://www.google.com", userID: "Uk78A" }
 };
 
 const users = {
@@ -52,6 +52,7 @@ const emailLookupHelper = function(users, newUser) {
   return false;
 };
 
+// This function checks if the email & password provided by the user match the username & password in the database
 const loginHelper = function(users, loginData) {
   for (let user in users) {
     console.log('User:', users[user].password, 'login password:', loginData.password);
@@ -71,6 +72,17 @@ const validateReg = function(newUser) {
   }
 };
 
+//This function filters the URLS visible to user
+const filterURLs = function (urlDatabase, req) {
+  let userUrlDatabase = {};
+  for (let shortURL in urlDatabase) {
+    if (urlDatabase[shortURL].userID === req.cookies.user_id) {
+      userUrlDatabase[shortURL] = urlDatabase[shortURL];
+    }
+  }
+  return userUrlDatabase;
+};
+
 app.get("/", (req, res) => {
   res.send("Hello!");
 });
@@ -80,15 +92,15 @@ app.get("/urls.json", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
-  let templateVars = { urls: urlDatabase, user : users[req.cookies.user_id] };
+  let userUrlDatabase = filterURLs(urlDatabase, req);
+  let templateVars = { urls: userUrlDatabase, user : users[req.cookies.user_id] };
   res.render("urls_index", templateVars);
-  console.log(templateVars);
-  console.log(users[req.cookies.user_id]);
 });
 
 app.post("/urls", (req, res) => {
   let shortURL = generateRandomString();
-  urlDatabase[shortURL] = req.body.longURL;
+  urlDatabase[shortURL].longURL = req.body.longURL;
+  urlDatabase[shortURL].userID = req.cookies.user_id;
   res.redirect(`/urls/${shortURL}`);
 });
 
@@ -139,8 +151,12 @@ app.post("/logout", (req, res) => {
   res.redirect('/urls');
 });
 app.get("/urls/:shortURL", (req, res) => {
-  let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], user : users[req.cookies.user_id] };
-  res.render("urls_show", templateVars);
+  if (filterURLs(urlDatabase, req)[req.params.shortURL]) {
+    let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL].longURL, user : users[req.cookies.user_id] };
+    res.render("urls_show", templateVars);
+  } else {
+    res.send("ERROR! You're not allowed to see this Tiny URL.");
+  }
 });
 
 app.get("/u/:shortURL", (req,res) => {
@@ -150,10 +166,10 @@ app.get("/u/:shortURL", (req,res) => {
   res.redirect(`${longURL}`); //// CHECK IF USER HAS ADDED HTTP
 });
 
-app.post("/urls/:id", (req, res) => {
-  urlDatabase[req.params.id] = req.body.longURL;
+app.post("/urls/:shortURL", (req, res) => {
+  urlDatabase[req.params.shortURL] = req.body.longURL;
   console.log(urlDatabase);
-  res.redirect(`/urls/${req.params.id}`);
+  res.redirect(`/urls/${req.params.shortURL}`);
 });
 
 app.post("/urls/:shortURL/delete", (req, res) => { //using javascript's delete operator to remove url
