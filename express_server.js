@@ -3,6 +3,7 @@ const app = express();
 const PORT = 8080; //default port 8080
 const bodyParser = require("body-parser");
 const cookieParser = require('cookie-parser');
+const bcrypt = require('bcrypt');
 
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieParser());
@@ -56,7 +57,7 @@ const emailLookupHelper = function(users, newUser) {
 const loginHelper = function(users, loginData) {
   for (let user in users) {
     console.log('User:', users[user].password, 'login password:', loginData.password);
-    if (users[user].email === loginData.email && users[user].password === loginData.password) {
+    if (users[user].email === loginData.email && bcrypt.compareSync(loginData.password, users[user].password)) {
       return true;
     }
   }
@@ -73,7 +74,7 @@ const validateReg = function(newUser) {
 };
 
 //This function filters the URLS visible to user
-const filterURLs = function (urlDatabase, req) {
+const filterURLs = function(urlDatabase, req) {
   let userUrlDatabase = {};
   for (let shortURL in urlDatabase) {
     if (urlDatabase[shortURL].userID === req.cookies.user_id) {
@@ -110,7 +111,9 @@ app.get("/register", (req, res) => {
 });
 
 app.post("/register", (req, res) => {
-  let newUser = new User(req.body.email, req.body.password);
+  const hashedPassword = bcrypt.hashSync(req.body.password, 10); //hash password using bcrypt
+  console.log(hashedPassword);
+  let newUser = new User(req.body.email, hashedPassword); //pass user input email & hashed password to newUser constructor function
   if (!(emailLookupHelper(users, newUser)) && validateReg(newUser)) {
     users[newUser.id] = newUser;
     res.cookie('user_id', newUser.id);
