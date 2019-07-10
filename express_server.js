@@ -60,8 +60,6 @@ const validateReg = function(newUser) {
     return true;
   }
 };
-//separate function into
-
 
 app.get("/", (req, res) => {
   res.send("Hello!");
