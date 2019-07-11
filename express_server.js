@@ -152,17 +152,29 @@ app.get("/urls/:shortURL", (req, res) => {
 });
 
 app.get("/u/:shortURL", (req,res) => {
-  if (urlDatabase[req.params.shortURL]) { //Check if shortURL exists in the database.
-    const longURL = urlDatabase[req.params.shortURL].longURL; // get longURL from database using req params.
+  
+  // check if shortURL exists in the database. 
+  if (urlDatabase[req.params.shortURL]) { 
+    const longURL = urlDatabase[req.params.shortURL].longURL; 
     urlDatabase[req.params.shortURL].count += 1; // adds to count of times page visited
     
-    if (!req.session.page_view) { //if the browers does not already have a cookie to track views of this short URL
-      req.session.page_view = generateRandomString(); //request cookie to track unique vists to Short URL
+    // if the browser does not have a session cookie for this short URL, request session cookie
+    if (!req.session.page_view) {
+      req.session.page_view = generateRandomString();
       req.session.save();
-      urlDatabase[req.params.shortURL].visitors.push(req.session.page_view); //push visitor id to visitor array in urlDatabaseEntry object
-      console.log('user_id:', req.session.user_id, "page_view", req.session.page_view, "visitors array", urlDatabase[req.params.shortURL].visitors);
     }
-    urlDatabase[req.params.shortURL].log[generateRandomString()] = new Visit(req.session.page_view);
+    // if this browser (or "session") has not visited this short URL before, add it to the array of visitors.
+    if (!(urlDatabase[req.params.shortURL].visitors.includes(req.session.page_view))) {
+      urlDatabase[req.params.shortURL].visitors.push(req.session.page_view); 
+
+    // check if a user is logged in; if so, use their email as ID in vistor's log. Otherwise, use randomly assigned visitor id (from cookie)
+    if (req.session.user_id) { 
+      urlDatabase[req.params.shortURL].log[generateRandomString()] = new Visit(users[req.session.user_id].email); // push their user id to the log in the url database
+    } else {
+      urlDatabase[req.params.shortURL].log[generateRandomString()] = new Visit(`Guest: ${req.session.page_view}`); // use session id of guest in log instead
+    }
+
+    
     console.log(urlDatabase[req.params.shortURL].log);
     res.redirect(`${longURL}`);
   } else {
