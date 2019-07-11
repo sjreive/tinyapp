@@ -19,7 +19,7 @@ class urlDatabaseEntry {
   constructor(longURL, userID) {
     this.longURL = longURL;
     this.userID = userID;
-    this.date = new Date();
+    this.date = new Date(); //generates timestamp upon creation of each new short URL
     this.count = 0; // This will increment whenever the link is visited
     this.visitors = []; //This array will hold list of all registered users who have visited this link;
   }
@@ -32,11 +32,10 @@ class User {
     this.id = generateRandomString();
     this.email = email;
     this.password = password;
-    this.urls = {};
   }
 }
 // This function generates a random 5 character string used to generate unique user id & short URL
-const generateRandomString = function() { 
+const generateRandomString = function() {
   const charString = "0123456789abcdefghijklmnopqrskutwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
   const stringLength = 5;
   let randString = "";
@@ -49,7 +48,7 @@ const generateRandomString = function() {
 
 // This function used to check if registering email already exists in the database.
 const emailLookupHelper = function(users, newUser) {
-  for (let user in users) { 
+  for (let user in users) {
     console.log('User:', users[user].email, 'login email:', newUser.email);
     if (users[user].email === newUser.email) {
       return user;
@@ -114,7 +113,8 @@ app.get("/urls", (req, res) => {
 app.post("/urls", (req, res) => {
   console.log(req.session);
   let shortURL = generateRandomString();
-  urlDatabase[shortURL] = new urlDatabaseEntry(req.body.longURL, req.session.user_id);
+  urlDatabase[shortURL] = new urlDatabaseEntry(req.body.longURL, req.session.user_id); // add new ShortURL to urlDatabase
+  
   res.redirect(`/urls/${shortURL}`);
 });
 
@@ -131,7 +131,7 @@ app.post("/register", (req, res) => {
   console.log(hashedPassword);
   req.body.password = hashedPassword;
   let newUser = new User(req.body.email, hashedPassword); //pass user input email & hashed password to newUser constructor function
-  if (!(emailLookupHelper(users, newUser)) && validateReg(newUser)) {
+  if (!(emailLookupHelper(users, newUser)) && validateReg(newUser)) { //check that password & email fields are not empty, and that email does not already exist in the database
     users[newUser.id] = newUser;
     req.session.user_id = newUser.id;
     req.session.save();
@@ -189,9 +189,12 @@ app.get("/u/:shortURL", (req,res) => {
   if (urlDatabase[req.params.shortURL]) { //if shortURL exists in the database
     const longURL = urlDatabase[req.params.shortURL].longURL;
     urlDatabase[req.params.shortURL].count += 1; // adds to count of times page visited
-    console.log(urlDatabase[req.params.shortURL].count);
-    console.log("req.params:", req.params);
-    console.log("longURL", longURL);
+    if (!req.session.page_view) { //if the browers does not already have a cookie associated with visiting this page
+      req.session.page_view = generateRandomString(); //request cookie to track unique vists to Short URL
+      req.session.save();
+      urlDatabase[req.params.shortURL].visitors.push(req.session.page_view); //push visitor id to visitor array in urlDatabaseEntry object
+      console.log('user_id:', req.session.user_id, "page_view", req.session.page_view, "visitors array", urlDatabase);
+    }
     res.redirect(`${longURL}`); //// CHECK IF USER HAS ADDED HTTP
   } else {
     res.send("ERROR! That Tiny URL does not exist.");
@@ -199,8 +202,7 @@ app.get("/u/:shortURL", (req,res) => {
 });
 
 app.post("/urls/:shortURL", (req, res) => {
-  urlDatabase[req.params.shortURL].longURL = req.body.longURL;
-  console.log(urlDatabase);
+  urlDatabase[req.params.shortURL].longURL = req.body.longURL; // add the shortURL & corresponding longURL to the url database.
   res.redirect('/urls');
 });
 
