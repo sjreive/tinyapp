@@ -1,6 +1,6 @@
 <header>
-    <nav class="navbar navbar-expand-md navbar-dark bg-success">
-      <a class="navbar-brand" href="/urls">TinyApp</a>
+    <nav class="navbar navbar-expand-md navbar-dark bg-info">
+      <a class="navbar-brand" style="font-family: Pacifico, Arial, sans-serif " href="/urls">TinyApp</a>
       <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
@@ -12,14 +12,14 @@
       </div>
       <% if (user) {%>
         <form class="form-inline"  method="POST" action="/logout" style="margin: 0 auto">
-          <label for="user" style="margin-right: 10px">Logged in as <%=user.email%></label>  
-          <button type="submit" class="btn btn-primary">Logout</button></form></a> 
+          <label for="user" style="margin-right: 10px; color: white">Logged in as <%=user.email%></label>  
+          <button type="submit" class="btn btn-info">Logout</button></form></a> 
         
       <% } else {%>  
       <form class="form-inline"  method="GET" action="/register" style="margin: 0 auto"> 
-        <button type="submit" class="btn btn-primary">Register</button></form></a>
+        <button type="submit" class="btn btn-info">Register</button></form></a>
         <form class="form-inline"  method="GET" action="/login" style="margin: 0 auto"> 
-          <button type="submit" class="btn btn-primary">Login</button></form></a>
+          <button type="submit" class="btn btn-info">Login</button></form></a>
       <%}%>
     </nav>
   </header>

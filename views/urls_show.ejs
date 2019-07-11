@@ -11,8 +11,8 @@
   <div class="card text-center">
       <div class="card-header"></div>
       <div class="card-body">      
-        <h5 class="card-title">TinyURL for: <a href="<%=longURL%>"> <%= longURL %></h5></a>
-        <p class="card-text">Short URL: <a href="/u/<%=shortURL%>"><%= shortURL %></a></p>
+        <h5 class="card-title">TinyURL for: <a style= "color: coral" href="<%=longURL%>"> <%= longURL %></h5></a>
+        <p class="card-text">Short URL: <a style= "color: coral" href="/u/<%=shortURL%>"><%= shortURL %></a></p>
       </div>
        
        <div class="card text-center">
@@ -20,7 +20,7 @@
         <form class="form-inline"  method="POST" action="/urls/<%=shortURL%>" style="margin: 0 auto">
             <label for="newlongURL">New URL:</label>
             <input class="form-control" type="text" name="longURL" placeholder="http://" style="width: 300px; margin: 1em; ">        
-          <button type="submit" class="btn btn-primary">
+          <button type="submit" class="btn btn-info">
                     Submit
                   </button></form></a>
       </div>

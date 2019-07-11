@@ -9,34 +9,34 @@ app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieSession({
   name: 'session',
   keys: ['blah'],
-  // Cookie Options
 }));
 
 app.set("view engine", "ejs");
 
-const urlDatabase = {
-  "b2xVn2" : { longURL: "http://www.lighthouselabs.ca", userID: "Uk78A" },
-  "9sm5xK" : { longURL: "http://www.google.com", userID: "Uk78A" }
-};
+const urlDatabase = {}; // This object will hold all url database entries (short URLS created)
 
 class urlDatabaseEntry {
   constructor(longURL, userID) {
     this.longURL = longURL;
     this.userID = userID;
+    this.date = new Date();
+    this.count = 0; // This will increment whenever the link is visited
+    this.visitors = []; //This array will hold list of all registered users who have visited this link;
   }
 }
 
-const users = {};
+const users = {}; // This object will hold all instances of users
 
 class User {
   constructor(email, password) {
     this.id = generateRandomString();
     this.email = email;
     this.password = password;
+    this.urls = {};
   }
 }
-
-const generateRandomString = function() {
+// This function generates a random 5 character string used to generate unique user id & short URL
+const generateRandomString = function() { 
   const charString = "0123456789abcdefghijklmnopqrskutwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
   const stringLength = 5;
   let randString = "";
@@ -49,7 +49,7 @@ const generateRandomString = function() {
 
 // This function used to check if registering email already exists in the database.
 const emailLookupHelper = function(users, newUser) {
-  for (let user in users) {
+  for (let user in users) { 
     console.log('User:', users[user].email, 'login email:', newUser.email);
     if (users[user].email === newUser.email) {
       return user;
@@ -119,7 +119,7 @@ app.post("/urls", (req, res) => {
 });
 
 app.get("/register", (req, res) => {
-  if (req.session.user_id) { //if user is already logged in, redirect to /urls 
+  if (req.session.user_id) { //if user is already logged in, redirect to /urls
     res.redirect('/urls');
   }
   let templateVars = { urls: urlDatabase, user : users[req.session.user_id] };
@@ -144,7 +144,7 @@ app.post("/register", (req, res) => {
 });
 
 app.get("/login", (req, res) => {
-  if (req.session.user_id) { //if user is already logged in, redirect to /urls 
+  if (req.session.user_id) { //if user is already logged in, redirect to /urls
     res.redirect('/urls');
   }
   let templateVars = { urls: urlDatabase, user : users[req.session.user_id] };
@@ -188,6 +188,8 @@ app.get("/urls/:shortURL", (req, res) => {
 app.get("/u/:shortURL", (req,res) => {
   if (urlDatabase[req.params.shortURL]) { //if shortURL exists in the database
     const longURL = urlDatabase[req.params.shortURL].longURL;
+    urlDatabase[req.params.shortURL].count += 1; // adds to count of times page visited
+    console.log(urlDatabase[req.params.shortURL].count);
     console.log("req.params:", req.params);
     console.log("longURL", longURL);
     res.redirect(`${longURL}`); //// CHECK IF USER HAS ADDED HTTP

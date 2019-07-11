@@ -10,7 +10,11 @@
   <body>
 
     <% if (!user) {%>
-      <p>Error: Please Login to view URLs.</p>
+      <main>
+        <div style="text-align: center; margin-top: 100px">
+        <h3>HELLO !</h3>
+      <p>Please Login to create & view Tiny URLs.</p>
+    </div>
     
     <% } else { %>
       <main style="margin: 1em;">
@@ -20,6 +24,8 @@
             <tr>
               <th scope="col">Short URL</th>
               <th scope="col">Long URL</th>
+              <th scope="col">Date Created</th>
+              <th scope="col"># of Visits</th>
               <th scope="col">Edit</th>
               <th scope="col">Delete</th>
             </tr>
@@ -27,14 +33,16 @@
           <tbody> 
               <% for (let url in urls) {%>
               <tr>
-                  <td><a href="/urls/<%= url %>"><%= url %></a></td>  
-                <td><a href="<%= urls[url].longURL %>"><%= urls[url].longURL %></a></td>
+                  <td><a style= "color: coral" href="/urls/<%= url %>"><%= url %></a></td>  
+                <td><a style= "color: coral" href="<%= urls[url].longURL %>"><%= urls[url].longURL %></a></td>
+                <td style= "color: grey"><%= urls[url].date.getUTCDate() + "/" + urls[url].date.getUTCMonth() + "/" + urls[url].date.getUTCFullYear()  %></td>
+                <td style= "color: grey"><%= urls[url].count  %></td>
                 <td><form method="GET" action="/urls/<%=url %>">
-                  <button type="submit" class="btn btn-primary" name="shortURL">
+                  <button type="submit" class="btn btn-info" name="shortURL">
                       Edit
                     </button></form></a></td>
                 <td><form method="POST" action="/urls/<%=url %>/delete">
-                  <button type="submit" class="btn btn-primary" name="shortURL">
+                  <button type="submit" class="btn btn-info" name="shortURL">
                     Delete
                   </button></form></a></td>
                  
