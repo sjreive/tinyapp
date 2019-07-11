@@ -39,15 +39,12 @@
                 <td style= "color: grey"><%= urls[url].date.getUTCDate() + "/" + urls[url].date.getUTCMonth() + "/" + urls[url].date.getUTCFullYear()  %></td>
                 <td style= "color: grey"><%= urls[url].count  %></td>
                 <td style= "color: grey"><%= urls[url].visitors.length  %></td>
-                <td><form method="GET" action="/urls/<%=url %>">
-                  <button type="submit" class="btn btn-info" name="shortURL">
-                      Edit
-                    </button></form></a></td>
-                <td><form method="POST" action="/urls/<%=url %>/delete?_method=DELETE">
-                  <button type="submit" class="btn btn-info" name="shortURL">
-                    Delete
-                  </button></form></a></td>
-                 
+                <td>
+                  <form method="GET" action="/urls/<%=url %>">
+                  <button type="submit" class="btn btn-info" name="shortURL">Edit</button></form></a></td>
+                <td>
+                  <form method="POST" action="/urls/<%=url %>/delete?_method=DELETE">
+                  <button type="submit" class="btn btn-info" name="shortURL">Delete</button></form></a></td>         
             </tr>
            <% }%>
           </tbody>

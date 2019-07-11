@@ -32,7 +32,8 @@ class urlDatabaseEntry {
     this.userID = userID;
     this.date = new Date(); //generates timestamp upon creation of each new short URL
     this.count = 0; // This will increment whenever the link is visited
-    this.visitors = []; //This array will hold list of all registered users who have visited this link;
+    this.visitors = []; //This array will hold list of all registered users who have visited this link & timestamp of visit;
+    this.log = {};
   }
 }
 
@@ -46,6 +47,12 @@ class User {
   }
 }
 
+class Visit {
+  constructor(visitorID) { // This constructor is used to create instance of visit to tinyURL
+    this.visitorID = visitorID;
+    this.date = new Date();
+  }
+}
 
 // if user is logged in, redirect to /urls. If they are not logged in, redirect to /login
 app.get("/", (req, res) => {
@@ -137,7 +144,7 @@ app.post("/logout", (req, res) => {
 });
 app.get("/urls/:shortURL", (req, res) => {
   if (filterURLs(urlDatabase, req)[req.params.shortURL]) {
-    let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL].longURL, user : users[req.session.user_id] };
+    let templateVars = { urls: urlDatabase, shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL].longURL, user : users[req.session.user_id] };
     res.render("urls_show", templateVars);
   } else {
     res.send("ERROR! You're not allowed to see this Tiny URL.");
@@ -145,16 +152,19 @@ app.get("/urls/:shortURL", (req, res) => {
 });
 
 app.get("/u/:shortURL", (req,res) => {
-  if (urlDatabase[req.params.shortURL]) { //if shortURL exists in the database
-    const longURL = urlDatabase[req.params.shortURL].longURL;
+  if (urlDatabase[req.params.shortURL]) { //Check if shortURL exists in the database.
+    const longURL = urlDatabase[req.params.shortURL].longURL; // get longURL from database using req params.
     urlDatabase[req.params.shortURL].count += 1; // adds to count of times page visited
-    if (!req.session.page_view) { //if the browers does not already have a cookie associated with visiting this page
+    
+    if (!req.session.page_view) { //if the browers does not already have a cookie to track views of this short URL
       req.session.page_view = generateRandomString(); //request cookie to track unique vists to Short URL
       req.session.save();
       urlDatabase[req.params.shortURL].visitors.push(req.session.page_view); //push visitor id to visitor array in urlDatabaseEntry object
-      console.log('user_id:', req.session.user_id, "page_view", req.session.page_view, "visitors array", urlDatabase);
+      console.log('user_id:', req.session.user_id, "page_view", req.session.page_view, "visitors array", urlDatabase[req.params.shortURL].visitors);
     }
-    res.redirect(`${longURL}`); //// CHECK IF USER HAS ADDED HTTP
+    urlDatabase[req.params.shortURL].log[generateRandomString()] = new Visit(req.session.page_view);
+    console.log(urlDatabase[req.params.shortURL].log);
+    res.redirect(`${longURL}`);
   } else {
     res.send("ERROR! That Tiny URL does not exist.");
   }
@@ -166,10 +176,10 @@ app.put("/urls/:shortURL", (req, res) => {
   res.redirect('/urls');
 });
 
-app.delete("/urls/:shortURL/delete", (req, res) => { //using javascript's delete operator to remove url
+app.delete("/urls/:shortURL/delete", (req, res) => { //use method-override in order to complete DELETE request
   if (filterURLs(urlDatabase, req)[req.params.shortURL]) { //if user is logged in and has authority to delete this shortURL (ie it is in their database), delete;
     console.log("DELETING!!");
-    delete urlDatabase[req.params.shortURL];
+    delete urlDatabase[req.params.shortURL]; //use javascript's delete operator to remove url
   } else { // if user has a
     res.send('CANNOT DELETE THIS RESOURCE!');
   }

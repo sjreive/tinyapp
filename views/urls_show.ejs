@@ -13,6 +13,9 @@
       <div class="card-body">      
         <h5 class="card-title">TinyURL for: <a style= "color: coral" href="<%=longURL%>"> <%= longURL %></h5></a>
         <p class="card-text">Short URL: <a style= "color: coral" href="/u/<%=shortURL%>"><%= shortURL %></a></p>
+        <p> Created on: <%= urls[shortURL].date.getUTCDate() + "/" + urls[shortURL].date.getUTCMonth() + "/" + urls[shortURL].date.getUTCFullYear() %> </p> 
+        <p> # of visits: <%= urls[shortURL].count %> </p>      
+        <p># of unique visitors: <%= urls[shortURL].visitors.length %></p>
       </div>
        
        <div class="card text-center">
@@ -20,9 +23,27 @@
         <form class="form-inline"  method="POST" action="/urls/<%=shortURL%>?_method=PUT" style="margin: 0 auto">
             <label for="newlongURL">New URL:</label>
             <input class="form-control" type="text" name="longURL" placeholder="http://" style="width: 300px; margin: 1em; ">        
-          <button type="submit" class="btn btn-info">
-                    Submit
-                  </button></form></a>
+          <button type="submit" class="btn btn-info">Submit</button></form></a>
+      </div>
+
+      <div class="card text-center">
+          <table class="table">
+              <thread>
+                <tr>
+                  <th scope="col">Visitor ID</th>
+                  <th scope="col">Date of Visit</th>
+                </tr>
+              </thread>
+              <tbody>
+                <% for (let visit in urls[shortURL].log) {%>
+                <tr>
+                    <td style= "color: grey"><%= urls[shortURL].log[visit].visitorID%></td> 
+                    <td style= "color: grey"><%= urls[shortURL].log[visit].date%></td>          
+                </tr>
+                <% } %>
+              </tbody>
+            </table>
+
       </div>
 
     <div class="card-footer text-muted"></div>
