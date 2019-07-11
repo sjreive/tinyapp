@@ -1,3 +1,4 @@
+const bcrypt = require('bcrypt');
 // This file contains all the helper functions.
 
 // This function generates a random 5 character string used to generate unique user id & short URL
@@ -20,7 +21,6 @@ const emailLookupHelper = function(users, newUser) {
       return user;
     }
   }
-  return false;
 };
 
 // This function checks if the email & password provided by the user match the username & password in the database
