@@ -4,6 +4,7 @@ const PORT = 8080; //default port 8080
 const bodyParser = require("body-parser");
 const cookieSession = require('cookie-session');
 const bcrypt = require('bcrypt');
+const methodOverride = require('method-override');
 //Require helper functions:
 const {
   generateRandomString,
@@ -20,6 +21,8 @@ app.use(cookieSession({
 }));
 
 app.set("view engine", "ejs");
+
+app.use(methodOverride('_method'));
 
 const urlDatabase = {}; // This object will hold all url database entries (short URLS created)
 
@@ -157,12 +160,13 @@ app.get("/u/:shortURL", (req,res) => {
   }
 });
 
-app.post("/urls/:shortURL", (req, res) => {
+app.put("/urls/:shortURL", (req, res) => {
   urlDatabase[req.params.shortURL].longURL = req.body.longURL; // add the shortURL & corresponding longURL to the url database.
+  console.log(req.params);
   res.redirect('/urls');
 });
 
-app.post("/urls/:shortURL/delete", (req, res) => { //using javascript's delete operator to remove url
+app.delete("/urls/:shortURL/delete", (req, res) => { //using javascript's delete operator to remove url
   if (filterURLs(urlDatabase, req)[req.params.shortURL]) { //if user is logged in and has authority to delete this shortURL (ie it is in their database), delete;
     console.log("DELETING!!");
     delete urlDatabase[req.params.shortURL];
