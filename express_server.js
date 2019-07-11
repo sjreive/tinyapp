@@ -90,8 +90,13 @@ const filterURLs = function(urlDatabase, req) {
   return userUrlDatabase;
 };
 
+// if user is logged in, redirect to /urls. If they are not logged in, redirect to /login
 app.get("/", (req, res) => {
-  res.send("Hello!");
+  if (req.session.user_id) {
+    res.redirect('/urls');
+  } else {
+    res.redirect('/login');
+  }
 });
 
 app.get("/urls.json", (req, res) => {
@@ -115,6 +120,9 @@ app.post("/urls", (req, res) => {
 });
 
 app.get("/register", (req, res) => {
+  if (req.session.user_id) { //if user is already logged in, redirect to /urls 
+    res.redirect('/urls');
+  }
   let templateVars = { urls: urlDatabase, user : users[req.session.user_id] };
   res.render("urls_register", templateVars);
 });
@@ -137,6 +145,9 @@ app.post("/register", (req, res) => {
 });
 
 app.get("/login", (req, res) => {
+  if (req.session.user_id) { //if user is already logged in, redirect to /urls 
+    res.redirect('/urls');
+  }
   let templateVars = { urls: urlDatabase, user : users[req.session.user_id] };
   res.render("urls_login", templateVars);
 });
@@ -176,16 +187,20 @@ app.get("/urls/:shortURL", (req, res) => {
 });
 
 app.get("/u/:shortURL", (req,res) => {
-  const longURL = urlDatabase[req.params.shortURL].longURL;
-  console.log("req.params:", req.params);
-  console.log("longURL", longURL);
-  res.redirect(`${longURL}`); //// CHECK IF USER HAS ADDED HTTP
+  if (urlDatabase[req.params.shortURL]) { //if shortURL exists in the database
+    const longURL = urlDatabase[req.params.shortURL].longURL;
+    console.log("req.params:", req.params);
+    console.log("longURL", longURL);
+    res.redirect(`${longURL}`); //// CHECK IF USER HAS ADDED HTTP
+  } else {
+    res.send("ERROR! That Tiny URL does not exist.");
+  }
 });
 
 app.post("/urls/:shortURL", (req, res) => {
   urlDatabase[req.params.shortURL].longURL = req.body.longURL;
   console.log(urlDatabase);
-  res.redirect(`/urls/${req.params.shortURL}`);
+  res.redirect('/urls');
 });
 
 app.post("/urls/:shortURL/delete", (req, res) => { //using javascript's delete operator to remove url
@@ -195,7 +210,7 @@ app.post("/urls/:shortURL/delete", (req, res) => { //using javascript's delete o
   } else { // if user has a
     res.send('CANNOT DELETE THIS RESOURCE!');
   }
-  res.redirect("/urls/"); // redirect back to urls regardless.
+  res.redirect("/urls");
 });
 
 app.get("/hello", (req, res) => {
