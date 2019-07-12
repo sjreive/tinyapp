@@ -109,18 +109,11 @@ app.get("/register", (req, res) => {
 
 // User can register with an email that does not already exist in the user database and a  valid (ie not empty) password. Password is encrypted with bcrypt.
 app.post("/register", (req, res) => {
-  
-  if (req.body.password === "") {
-    res.statusCode = 400;
-    let templateVars = { urls: urlDatabase, user: users[req.session.user_id], errorStatusCode: res.statusCode, errorMessage: "Bad Request. So Bad." };
-    res.render("urls_error", templateVars);
-    res.render(`Error ${res.statusCode}, Bad Request- server cannnot process registeration info!`);
-  }
   const hashedPassword = bcrypt.hashSync(req.body.password, 10);
   let newUser = new User(req.body.email, hashedPassword);
   
   // checking credentials entered by new user for validity & either redirecting to /urls or error page.
-  if (!(emailLookupHelper(users, newUser)) && validateReg(newUser)) {
+  if (!(emailLookupHelper(users, newUser)) && validateReg(req.body.email, req.body.password)) {
     users[newUser.id] = newUser;
     req.session.user_id = newUser.id;
     req.session.save();

@@ -35,8 +35,8 @@ const loginHelper = function(users, loginData) {
 };
 
 // This function is used to check if email & password fields are empty.
-const validateReg = function(newUser) {
-  if (newUser.email === "" || newUser.password === "") {
+const validateReg = function(email, password) {
+  if (email === "" || password === "") {
     return false;
   } else {
     return true;
