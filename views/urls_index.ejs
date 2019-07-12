@@ -34,8 +34,8 @@
           <tbody> 
               <% for (let url in urls) {%>
               <tr>
-                  <td><a style= "color: coral" href="/urls/<%= url %>"><%= url %></a></td>  
-                <td><a style= "color: coral" href="<%= urls[url].longURL %>"><%= urls[url].longURL %></a></td>
+                  <td><a href="/urls/<%= url %>"><%= url %></a></td>  
+                <td><a href="<%= urls[url].longURL %>"><%= urls[url].longURL %></a></td>
                 <td style= "color: grey"><%= urls[url].date.getUTCDate() + "/" + urls[url].date.getUTCMonth() + "/" + urls[url].date.getUTCFullYear()  %></td>
                 <td style= "color: grey"><%= urls[url].count  %></td>
                 <td style= "color: grey"><%= urls[url].visitors.length  %></td>
