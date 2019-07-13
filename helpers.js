@@ -16,7 +16,6 @@ const generateRandomString = function() {
 // This function used to check if registering email already exists in the database.
 const emailLookupHelper = function(users, newUser) {
   for (let user in users) {
-    console.log('User:', users[user].email, 'login email:', newUser.email);
     if (users[user].email === newUser.email) {
       return user;
     }
@@ -26,7 +25,6 @@ const emailLookupHelper = function(users, newUser) {
 // This function checks if the email & password provided by the user match the username & password in the database
 const loginHelper = function(users, loginData) {
   for (let user in users) {
-    console.log('User:', users[user].password, 'login password:', loginData.password);
     if (users[user].email === loginData.email && bcrypt.compareSync(loginData.password, users[user].password)) {
       return true;
     }

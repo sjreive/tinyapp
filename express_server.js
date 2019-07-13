@@ -213,7 +213,6 @@ app.put("/urls/:shortURL", (req, res) => {
 // User can delete the long URL of short URLs that belong to them. Delete request via method override. If short URL doesn't belong to them, render error view.
 app.delete("/urls/:shortURL/delete", (req, res) => {
   if (filterURLs(urlDatabase, req)[req.params.shortURL]) {
-    console.log("DELETING!!");
     delete urlDatabase[req.params.shortURL]; //use javascript's delete operator to remove url
     res.redirect("/urls");
   } else {
